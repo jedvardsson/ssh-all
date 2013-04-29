@@ -5,7 +5,7 @@ APP_HOME=$(dirname $(readlink -f $0))
 
 showhelp() {
     cat <<EOF
-Runs ssh over all hosts.
+Run ssh command over list of hosts.
 
 Usage:
 
