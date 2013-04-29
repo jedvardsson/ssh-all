@@ -1,0 +1,57 @@
+#!/bin/bash
+
+PROG="$(basename $0)"
+APP_HOME=$(dirname $(readlink -f $0))
+
+showhelp() {
+    cat <<EOF
+Runs ssh over all hosts.
+
+Usage:
+
+$PROG [options] [host...] -- [ssh-args]
+
+	-h, --help              Shows this help.
+
+EOF
+    exit;
+}
+
+# Parse command line
+while [ $# -gt 0 ]; do
+    case $1 in
+        -h|--help) showhelp; exit 0;;
+        -*) echo "Unknown option: $1"; exit 1;;
+        *) break;;
+    esac
+done
+
+hosts=( )
+while [ $# -gt 0 ]; do
+    case $1 in
+        --) shift; break;;
+        *)  
+            hosts+=($1)
+            shift
+            ;;
+    esac
+done
+
+if [ -t 1 ]; then
+    terminal=1
+fi
+
+color() {
+    if [ "$terminal" = 1 ]; then
+        echo -e "\033[1;32m$1\033[0m"
+    else
+        echo $1
+    fi
+}
+
+
+for host in ${hosts[@]}
+do
+    ssh $host "$@" 2>&1 | 
+        awk "{print \"$(color $host:) \" \$0} END {if (NR > 1) print \"\"}"
+done
